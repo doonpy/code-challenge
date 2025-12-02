@@ -1,0 +1,32 @@
+@startuml sequence
+
+title Sequence Diagram for Scoreboard Service
+
+autonumber
+
+actor User as u
+participant "Scoreboard Service" as ssb
+database Redis as r
+database Postgres as pg
+
+note over u, pg: 1. User dispatches an API to update the score when completed an action
+u -> ssb: POST /api/v1/scores
+ssb -> ssb: Validate the action id
+ssb -> ssb: Get the score from the action id
+ssb -> r: ZINCRBY leaderboard <score> <user_id>
+ssb --> u: 200 OK
+
+autonumber 1
+note over u, pg: 2. Fetch the top 10 users from scoreboard
+u -> ssb: GET /api/v1/scores
+ssb -> r: ZREVRANGE leaderboard 0 9 WITHSCORES
+r -> ssb: RETURN top 10 users with scores
+ssb -> r: Get user profiles from the cache
+r -> ssb: RETURN user profiles
+alt "No cache user profile"
+  ssb -> pg: Get user profiles from the database
+  ssb -> r: Store user profiles in the cache
+end
+ssb -> u: Response with the top 10 users
+
+@enduml

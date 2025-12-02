@@ -1,0 +1,19 @@
+@startuml high-level-design
+
+title High-Level Design for Scoreboard Service
+
+top to bottom direction
+
+actor User as u
+rectangle "Scoreboard service" as ssb
+database "Scoreboard store" as r
+database "Profile store" as pg
+
+u --> ssb: 1.Complete an action
+u --> ssb: 3. Fetch the top 10 users from scoreboard
+ssb --> r : 2. Update score
+ssb --> r : 4a. Get user profiles from the cache
+ssb --> pg : 4b. Get user profiles from the database
+ssb --> r : 5. Store user profiles in the cache
+
+@enduml
